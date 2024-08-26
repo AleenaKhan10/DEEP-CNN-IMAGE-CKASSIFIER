@@ -6,6 +6,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout
+from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
+
+
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -71,5 +74,21 @@ model.summary()
 logdir = 'logs'
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 history = model.fit(train, epochs=20, validation_data=val, callbacks=[tensorboard_callback])
+
+
+precision = Precision()
+recall = Recall()
+accuracy = BinaryAccuracy()
+
+for batch in test.as_numpy_iterator():
+    X, y = batch
+    yhat = model.predict(X)
+    precision.update_state(y, yhat)
+    recall.update_state(y, yhat)
+    accuracy.update_state(y, yhat)
+
+print(precision.result().numpy())
+print(recall.result().numpy())
+print(accuracy.result().numpy())
 
 
